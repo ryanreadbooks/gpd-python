@@ -36,5 +36,5 @@ class Finger:
         :return:
         """
         # calculate top and bottom of the hand (top = finger tip, bottom = base)
-
+        pass
 

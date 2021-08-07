@@ -11,9 +11,8 @@ class HandSearcherConfig:
         self.radius = 0.001
         self.normal_radius = 0.001
         self.n_samples = 30
-        self.n_orientations = 8
+        self.range_rotation = 90
+        self.n_rotations = 8
         self.n_finger_placements = 10
-        self.need_deepen_hand = True
-        self.rot_axes = None
         self.friction_coeff = 20
         self.hand_geometry: HandGeometry = HandGeometry()

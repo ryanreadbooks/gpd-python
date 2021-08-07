@@ -21,7 +21,11 @@ def do_main():
     frames = frame_calculator.calculate_local_frames(sampled_points)
     for frame in frames:
         print(frame)
-        frame.check_axis_orthogonal()
+        # frame.check_axis_orthogonal()
+        print(np.linalg.norm(frame.normal_axis))
+        print(np.linalg.norm(frame.binormal_axis))
+        print(np.linalg.norm(frame.curvature_axis))
+        print('-' * 20)
 
 
 if __name__ == '__main__':

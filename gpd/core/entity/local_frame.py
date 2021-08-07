@@ -12,6 +12,7 @@ class LocalFrame:
         Create the local reference frame
         :param sample_point: the point itself. np.ndarray, shape=(3,)
         """
+        # fiy, all axes are unit vector here
         self.curvature_axis = None
         self.normal_axis = None
         self.binormal_axis = None
@@ -41,9 +42,13 @@ class LocalFrame:
         normals_avg /= np.linalg.norm(normals_avg)  # shape=(3,)
         if normals_avg @ self.normal_axis < 0:
             self.normal_axis *= -1.0
+            self.curvature_axis *= -1.0
 
         # 4. create binormal (corresponds to major principal curvature axis)
         self.binormal_axis = np.cross(self.curvature_axis, self.normal_axis)
+
+    def as_matrix(self) -> np.ndarray:
+        return np.array([self.normal_axis, self.binormal_axis, self.curvature_axis]).T
 
     def __str__(self):
         return f'Sample = {self.sample}, ' \
