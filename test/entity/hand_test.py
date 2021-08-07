@@ -2,7 +2,7 @@ import numpy as np
 import open3d as o3d
 
 from gpd.core import Hand
-from gpd.core import LocalFrameCalculator, LocalFrame, PointSampler
+from gpd.core import LocalFrameCalculator, LocalFrame, PointSampler, HandGeometry
 
 
 def do_test():
@@ -16,10 +16,10 @@ def do_test():
     frames = frame_calculator.calculate_local_frames(sampled_points)
 
     bottom_center = np.array([0., 0., 0.])
-    test_hand = Hand(sampled_points[0], frames[0].as_matrix(), bottom_center,
-                     0.01, 0.02, 0.12, 0.06)
+    test_hand = Hand(sampled_points[0], frames[0], bottom_center,
+                     HandGeometry(0.01, 0.02, 0.12, 0.06, 0.01))
 
-    test_hand.check_square_collision(bottom_center, sampled_points, Hand.OpenRegion)
+    test_hand.check_square_collision(sampled_points, Hand.OpenRegion)
 
 
 if __name__ == '__main__':

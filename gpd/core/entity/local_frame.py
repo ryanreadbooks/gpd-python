@@ -50,6 +50,19 @@ class LocalFrame:
     def as_matrix(self) -> np.ndarray:
         return np.array([self.normal_axis, self.binormal_axis, self.curvature_axis]).T
 
+    def rotate(self, rotation: np.ndarray):
+        """
+        rotate this local reference frame and return the new instance
+        :param rotation: rotation matrix
+        :return: the new rotated local frame instance
+        """
+        res = rotation @ self.as_matrix()
+        new_frame = LocalFrame(self.sample)
+        new_frame.normal_axis = res[:, 0]
+        new_frame.binormal_axis = res[:, 1]
+        new_frame.curvature_axis = res[:, 2]
+        return new_frame
+
     def __str__(self):
         return f'Sample = {self.sample}, ' \
                f'Curvature axis = {self.curvature_axis}, ' \

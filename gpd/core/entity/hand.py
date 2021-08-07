@@ -4,6 +4,7 @@ import open3d as o3d
 
 from .finger import Finger
 from .local_frame import LocalFrame
+from .hand_geometry import HandGeometry
 
 ROT_AXES = [np.array([1., 0., 0.]), np.array([0., 1., 0.]), np.array([0., 0., 1.])]
 PointCloud = o3d.geometry.PointCloud
@@ -33,50 +34,47 @@ class Hand:
     RightFInger = 0x04
     HandBottom = 0x08
 
-    def __init__(self, sample: np.ndarray, frame: np.ndarray, bottom_center: np.ndarray, finger_width: float, hand_height: float,
-                 hand_outer_diameter: float, hand_depth: float):
+    def __init__(self, sample: np.ndarray, frame: LocalFrame, bottom_center: np.ndarray, geometry: HandGeometry):
         """
         init a robot hand
         :param sample: the point neighborhood associated with the grasp
         :param frame: the orientation of the grasp as a rotation matrix associated with the sample point
-        :param bottom_center: the center coordinates of hand bottom(base)
-        :param finger_width: the width of the finger, assuming that two fingers are identical
-        :param hand_height: the height of the robot hand
-        :param hand_outer_diameter: the total width of the whole robot hand
-        :param hand_depth: the finger length
+        :param bottom_center: the center coordinates of hand bottom(base). location of the hand, np.ndarray, shape = (3,)
+        :param geometry: the hand geometry
         """
-        assert frame.shape == (3, 3), "frame as rotation matrix for the hand, shape must be (3,3), but got {}".format(frame.shape)
+        shape = frame.as_matrix().shape
+        assert shape == (3, 3), "frame as rotation matrix for the hand, shape must be (3,3), but got {}".format(shape)
+        c_shape = bottom_center.shape
+        assert c_shape == (3,) or c_shape == (3, 1) or c_shape == (1, 3), 'bottom center represents 3d coordinate, ' \
+                                                                          'only 3-element vector are allowed'
         self.sample = sample
-        self.finger_width = finger_width
-        self.hand_height = hand_height
-        self.hand_outer_diameter = hand_outer_diameter
-        self.hand_depth = hand_depth
-        self.rotation = frame
+        self.finger_width = geometry.finger_width
+        self.hand_height = geometry.hand_height
+        self.hand_outer_diameter = geometry.hand_outer_diameter
+        self.hand_depth = geometry.hand_depth
+        self.rotation = frame.as_matrix()
         self.position = None
-        self.approach_axis = frame[:, 0]
-        self.binormal_axis = frame[:, 1]
-        self.curvature_axis = frame[:, 2]
+        self.approach_axis = self.rotation[:, 0]
+        self.binormal_axis = self.rotation[:, 1]
+        self.curvature_axis = self.rotation[:, 2]
         # we need to determine the coordinates of each point of the hand based on the hand geometry
+        self.bottom_center = bottom_center
         self.hand_points = self._cal_hand_points_loc(bottom_center)
 
-    def check_square_collision(self, bottom_center: np.ndarray, points: np.ndarray, way) -> (bool, np.ndarray):
+    def check_square_collision(self, points: np.ndarray, way) -> (bool, np.ndarray):
         """
         check whether there are collisions between given 'points' and the specified hand part
-        :param bottom_center: location of the hand. np.ndarray, shape = (3,)
         :param points: the graspable object points, shape = (n, 3) or (3, n)
         :param way: which part of the robot hand should be considered for collision check,
                     OpenRegion, LeftFinger, RightFInger, HandBottom are allowed
         :return: true - no collision; false - has collision; and the index of inside points are also returned
         """
-        c_shape = bottom_center.shape
         p_shape = points.shape
-        assert c_shape == (3,) or c_shape == (3, 1) or c_shape == (1, 3), 'bottom center represents 3d coordinate, ' \
-                                                                          'only 3-element vector are allowed'
         assert p_shape[1] == 3 or p_shape[0] == 3, f'shape of points = (n, 3) or (3, n) are allowed, but got {p_shape}'
         if p_shape[0] == 3:
             points = points.reshape(-1, 3)
         # n_points = points.shape[0]
-        points = points - bottom_center.reshape(1, 3)
+        points = points - self.bottom_center.reshape(1, 3)
         # rotate the point to the hand frame
         points_g = (self.rotation @ points.T).T  # (n, 3)
 
@@ -114,24 +112,36 @@ class Hand:
         points_in_cube_idx = np.where(np.sum(a, axis=0) == len(a))[0]  # len(a) = 6
         has_points_in_cube = False
         if len(points_in_cube_idx) != 0:
+            print('Has points in cube')
             has_points_in_cube = True
 
         return has_points_in_cube, points_in_cube_idx
 
-    def check_collided(self, bottom_center: np.ndarray, points: np.ndarray) -> bool:
+    def check_collided(self, points: np.ndarray) -> bool:
         """
         check whether the given points collided with any part of the robot hand
-        :param bottom_center: location of the hand. np.ndarray, shape = (3,)
         :param points: the graspable object points, shape = (n, 3) or (3, n)
         :return: true -> collided; false -> not collided
         """
-        if self.check_square_collision(bottom_center, points, self.HandBottom)[0]:
+        if self.check_square_collision(points, self.HandBottom)[0]:
+            print('Collided with bottom')
             return True
-        if self.check_square_collision(bottom_center, points, self.LeftFinger)[0]:
+        if self.check_square_collision(points, self.LeftFinger)[0]:
+            print('Collided with left finger')
             return True
-        if self.check_square_collision(bottom_center, points, self.RightFInger)[0]:
+        if self.check_square_collision(points, self.RightFInger)[0]:
+            print('Collided with right finger')
             return True
         return False
+
+    def update_hand_points_position(self, bottom_center: np.ndarray):
+        """
+        update the position of the points on hand based the new 'bottom_center', which means updating self.hand_points
+        :param bottom_center: the new bottom center of the hand, which means a new position is given
+        :return:
+        """
+        self.bottom_center = bottom_center
+        self.hand_points = self._cal_hand_points_loc(bottom_center)
 
     def _cal_hand_points_loc(self, bottom_center: np.ndarray) -> np.ndarray:
         """
@@ -173,3 +183,12 @@ class Hand:
         p20 = -self.approach_axis * hh + p12
 
         return np.vstack([bottom_center, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20])
+
+    def approach_object(self, dist: float):
+        """
+        approach the hand to the object along the approach axis by the distance of 'dist'
+        :param dist: the distance to go
+        :return:
+        """
+        # update the bottom center, make it approach the object
+        self.bottom_center = self.approach_axis * dist + self.bottom_center
