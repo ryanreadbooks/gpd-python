@@ -1,0 +1,6 @@
+# Grasp candidate generation configuration
+grasp_candidate_generation:
+  num_samples: 50
+  normals_radius: 0.001
+  num_orientations: 8
+  num_placements: 10
