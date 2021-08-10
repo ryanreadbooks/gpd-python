@@ -2,7 +2,6 @@ from typing import List
 import numpy as np
 import open3d as o3d
 
-from .finger import Finger
 from .local_frame import LocalFrame
 from .hand_geometry import HandGeometry
 
@@ -209,6 +208,7 @@ class Hand:
         """
         # update the bottom center, make it approach the object
         self.bottom_center = self.approach_axis * dist + self.bottom_center
+        self.frame.sample = self.bottom_center
         # update points on hand at the same time
         self.hand_points_vis = self.cal_hand_points_loc(self.bottom_center, self.approach_axis, self.binormal_axis)
 

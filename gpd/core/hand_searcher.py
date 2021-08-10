@@ -35,7 +35,7 @@ class HandSearcher:
         :return:
         """
 
-        ndy = self.config.n_finger_placements
+        ndy = self.config.n_dy
         fw = self.config.hand_geometry.finger_width
         dy_steps = np.arange(-fw * ndy, (ndy + 1) * fw, fw)
         # in radians

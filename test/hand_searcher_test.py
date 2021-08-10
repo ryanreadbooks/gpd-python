@@ -1,4 +1,10 @@
-from typing import List
+import os, sys
+
+# print(__file__)  # file relative path
+# print(os.path.abspath(__file__))  # file absolute path
+# print(os.path.dirname(os.path.abspath(__file__)))   # parent absolute path
+Base_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(Base_DIR)
 
 import numpy as np
 import open3d as o3d
@@ -11,17 +17,16 @@ from gpd.core.visualization import DynamicVisualizer, StaticVisualizer, BaseVisu
 @timer
 def do_main():
     # np.random.seed(125)
-
     # read the point cloud from ply file
-    cloud = o3d.io.read_point_cloud('plys/glue.ply')
-    # cloud = o3d.io.read_point_cloud('plys/krylon.pcd')
+    # cloud = o3d.io.read_point_cloud('plys/glue.ply')
+    cloud = o3d.io.read_point_cloud('plys/krylon.pcd')
     all_points = np.asarray(cloud.points) / 1.
     print(f'point shape = {all_points.shape}, max = {all_points.max()}, min = {all_points.min()}')
     cloud = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(all_points))
     vis = StaticVisualizer(True)
     vis.add_pointcloud(cloud, np.array([255, 20, 125]))
     # vis.add_pointcloud_by_array(all_points)
-    config = HandSearcherConfig(HandGeometry(finger_width=0.005, hand_outer_diameter=0.12, hand_depth=0.06, hand_height=0.01, init_bite=0.01))
+    config = HandSearcherConfig('../cfg/grasp_generation.yaml')
     # sample point from pointcloud first
     sampler = PointSampler(config.n_samples, method=PointSampler.Uniformly)
     sampled_cloud, _ = sampler.sample(cloud)
@@ -30,7 +35,7 @@ def do_main():
 
     # then calculate the local reference frame for all sampled points
     print('sampled_points shape = ', sampled_points.shape)
-    frame_calculator = LocalFrameCalculator(radius=0.001, cloud=cloud, normals_radius=0.01)
+    frame_calculator = LocalFrameCalculator(radius=config.radius, cloud=cloud, normals_radius=config.normal_radius)
     frames = frame_calculator.calculate_local_frames(sampled_points)
 
     # for frame in frames:
@@ -55,7 +60,7 @@ def do_main():
         vis.add_hand(grasp, False)
         # vis.add_pointcloud(cloud.select_by_index(grasp.contained_pts_idx, invert=True), )
         vis.add_pointcloud(cloud.select_by_index(grasp.contained_pts_idx),
-                           np.array([max(int(255 // (i + 1)), 0), min(20 * i, 255), min(255, i * 30 - 25)]))
+                           np.array([max(int(251 // (i + 1)), 0), min(20 * i, 255), min(255, i * 30 - 25)]))
 
     vis.show()
 
