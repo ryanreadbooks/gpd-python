@@ -30,6 +30,8 @@ class LocalFrameCalculator:
             self.tree = o3d.geometry.KDTreeFlann(cloud)
         else:
             self.tree = tree
+        cloud.orient_normals_consistent_tangent_plane(30)
+        # o3d.visualization.draw_geometries([cloud.paint_uniform_color(np.array([255, 0, 0]))], point_show_normal=True)
 
     def calculate_local_frames(self, samples: np.ndarray) -> List[LocalFrame]:
         """

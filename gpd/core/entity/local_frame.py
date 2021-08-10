@@ -65,9 +65,9 @@ class LocalFrame:
 
     def __str__(self):
         return f'Sample = {self.sample}, ' \
-               f'Curvature axis = {self.curvature_axis}, ' \
                f'Normal axis = {self.normal_axis}, ' \
-               f'Binormal axis = {self.binormal_axis}'
+               f'Binormal axis = {self.binormal_axis}' \
+               f'Curvature axis = {self.curvature_axis}, '
 
     def check_axis_orthogonal(self):
         print('curvature_axis @ normal_axis', self.curvature_axis @ self.normal_axis)
