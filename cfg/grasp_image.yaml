@@ -1,9 +1,5 @@
 # grasp image representation configuration
-grasp_representation:
-  use_grasp_image: True
-
-grasp_image_config:
-  image_size: 60
-  total_num_channels: 12
-  max_voxel_points: 50
-  margin: 1
+image_size: 60
+total_num_channels: 3
+max_voxel_points: 50
+margin: 1

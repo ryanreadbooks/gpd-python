@@ -2,9 +2,9 @@
 grasp_candidate_generation:
   neighbor_radius: 0.001
   normals_radius: 0.001
-  num_samples: 5
-  num_rotation: 8
-  range_rotation: 60
+  num_samples: 50
+  num_rotation: 10
+  range_rotation: 90
   num_dy: 10
   approach_step: 0.005
   friction_cone_angle: 20

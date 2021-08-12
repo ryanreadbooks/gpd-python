@@ -91,8 +91,6 @@ class HandSearcher:
                 if len(dy_potential_grasps) != 0:
                     # we only take the middle grasps from dy direction
                     middle_grasp: Hand = dy_potential_grasps[len(dy_potential_grasps) // 2]
-                    potential_grasps.append(middle_grasp)
-                    # final_grasps.append(middle_grasp)
                     # then check if the hand is collided with the table by checking if this grasp is a grasp from down to top direction (greater than 30 degrees)
                     # the finger tip position
                     fingertip_pos = middle_grasp.bottom_center + middle_grasp.approach_axis * middle_grasp.hand_depth
@@ -104,32 +102,33 @@ class HandSearcher:
                     if fingertip_pos[2] < middle_grasp.bottom_center[2] - middle_grasp.hand_depth * np.sin(30. / 180. * np.pi):
                         potential_grasps.append(middle_grasp)
 
-            # now we can make the grasps approach the object
-            approach_max_dist = self.config.hand_geometry.hand_depth  # the objective distance to approach
-            n_approaches = int(approach_max_dist // self.config.approach_step)
-            for p_grasp in potential_grasps:
-                collided_during_approaching = False
-                for i in range(n_approaches):
-                    # approach the hand along the approach axis by the distance of approach_step and check collision everytime
-                    # approach_dist = i * self.config.approach_step
-                    p_grasp.approach_object(dist=self.config.approach_step)
-                    # check collision
-                    is_collided = p_grasp.check_collided(points)
-                    # if no collision happens, we continue to "push" the hand to the object
-                    # vis.add_hand('approaching_hand', p_grasp)
-                    if is_collided:
-                        collided_during_approaching = True
-                        # we “push” the hand forward along the negative x axis
-                        # until one of the fingers or the hand base makes contact with the point cloud.
-                        # this one has collision, we take two step back
-                        p_grasp.approach_object(dist=-self.config.approach_step * 2)
-                        # final check collision
-                        pts_in_open_region, _ = p_grasp.check_square_collision(points, Hand.OpenRegion)
-                        collided = p_grasp.check_collided(points)
-                        if pts_in_open_region and not collided:
-                            final_grasps.append(p_grasp)
+        # now we can make the grasps approach the object
+        approach_max_dist = self.config.hand_geometry.hand_depth  # the objective distance to approach
+        n_approaches = int(approach_max_dist // self.config.approach_step)
+        print('INFO: potential_grasps len = ', len(potential_grasps))
+        for p_grasp in potential_grasps:
+            collided_during_approaching = False
+            for i in range(n_approaches):
+                # approach the hand along the approach axis by the distance of approach_step and check collision everytime
+                # approach_dist = i * self.config.approach_step
+                p_grasp.approach_object(dist=self.config.approach_step)
+                # check collision
+                is_collided = p_grasp.check_collided(points)
+                # if no collision happens, we continue to "push" the hand to the object
+                # vis.add_hand('approaching_hand', p_grasp)
+                if is_collided:
+                    collided_during_approaching = True
+                    # we “push” the hand forward along the negative x axis
+                    # until one of the fingers or the hand base makes contact with the point cloud.
+                    # this one has collision, we take two step back
+                    p_grasp.approach_object(dist=-self.config.approach_step * 2)
+                    # final check collision
+                    pts_in_open_region, _ = p_grasp.check_square_collision(points, Hand.OpenRegion)
+                    collided = p_grasp.check_collided(points)
+                    if pts_in_open_region and not collided:
+                        final_grasps.append(p_grasp)
                         break
-                if not collided_during_approaching:
-                    final_grasps.append(p_grasp)
+            if not collided_during_approaching:
+                final_grasps.append(p_grasp)
 
         return final_grasps

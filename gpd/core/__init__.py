@@ -5,3 +5,4 @@ from .hand_searcher import HandSearcher
 from .cfgs import *
 from .visualization import *
 from .grasp_image_generator import GraspImageGenerator
+from .grasp_label_processor import *

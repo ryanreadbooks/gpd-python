@@ -90,7 +90,7 @@ class GraspImageGenerator:
         occupied_pic = occupied_pic / occupied_max
         return occupied_pic, normal_pic
 
-    def generate_grasp_image(self, grasp: Hand, points: np.ndarray, normals: np.ndarray):
+    def generate_grasp_image(self, grasp: Hand, points: np.ndarray, normals: np.ndarray) -> np.ndarray:
         """
         Generate the corresponding grasp image for the given 'grasp'
         :param grasp: the given grasp
