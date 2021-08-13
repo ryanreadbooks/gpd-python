@@ -20,6 +20,7 @@ class HandSearcherConfig:
             self.n_dy = grasp_generation_cfg['num_dy']
             self.approach_step = grasp_generation_cfg['approach_step']
             self.friction_coeff = grasp_generation_cfg['friction_cone_angle']
+            self.min_viable =  grasp_generation_cfg['min_viable']
             hand_geo_cfg = cfg['hand_geometry']
             self.hand_geometry = HandGeometry(finger_width=hand_geo_cfg['finger_width'],
                                               hand_outer_diameter=hand_geo_cfg['hand_outer_diameter'],

@@ -4,6 +4,7 @@ import numpy as np
 import open3d as o3d
 
 from .entity import Hand
+from .grasp_image_generator import GraspImageGenerator
 from .cfgs import *
 from ..utils import timer
 
@@ -17,14 +18,20 @@ class AntipodalGraspLabeling:
     HALF_GRASP = 1
     FULL_GRASP = 2
 
-    def __init__(self, extremal_thresh: float, n_viable: float, friction_coeff):
+    def __init__(self, extremal_thresh: float, n_viable: float, friction_coeff: float):
+        """
+
+        :param extremal_thresh: a tolerance
+        :param n_viable: minimum number of points to be accepted as full grasp
+        :param friction_coeff: the angle of the friction cone, unit degree
+        """
         self.extremal_thresh = extremal_thresh
         self.n_viable = n_viable
         self.friction_coeff = friction_coeff  # angle(degree) of the friction cone
 
     def label_grasp(self, grasp: Hand, points: np.ndarray, normals: np.ndarray) -> bool:
         """
-
+        label this grasp to be NO_GRASP, HALF_GRASP or FULL_GRASP, only FULL_GRASP considered to be positive
         :param grasp:
         :param points: points with respect to hand coordinate frame, shape = (n, 3)
         :param normals: normals with respect to hand coordinate frame, shape = (n, 3)
@@ -86,3 +93,6 @@ class AntipodalGraspLabeling:
                 result = self.FULL_GRASP
 
         return result
+
+    def label_grasp_force_closure(self, grasp: Hand, points: np.ndarray, normals: np.ndarray):
+        return grasp.check_force_closure(points, normals, np.tan(self.friction_coeff * 180 / np.pi))

@@ -212,5 +212,44 @@ class Hand:
         # update points on hand at the same time
         self.hand_points_vis = self.cal_hand_points_loc(self.bottom_center, self.approach_axis, self.binormal_axis)
 
+    def find_contacts(self, points, normals):
+        # transform the point to the hand frame
+        points_g = (self.rotation.T @ (points[self.contained_pts_idx] - self.bottom_center).T).T
+        normals_g = (self.rotation @ normals.T).T
+        right_idx = np.argmin(points_g[:, 1], axis=0)
+        left_idx = np.argmax(points_g[:, 1], axis=0)
+        right_point = points[right_idx]
+        left_point = points[left_idx]
+        right_normal = normals[right_idx]
+        left_normal = normals[left_idx]
+
+        return left_point, right_point, left_normal, right_normal, left_idx, right_idx
+
+    def check_force_closure(self, points, normals, friction_coef) -> bool:
+        """
+
+        :param points: shape = (n, 3)
+        :param normals: shape = (n, 3)
+        :param friction_coef: the friction coefficient
+        :return:
+        """
+        p1, p2, n1, n2, _, _ = self.find_contacts(points, normals)
+
+        n1, n2 = -n1, -n2  # inward facing normals
+
+        if (p1 == p2).all():  # same point
+            return False
+
+        for normal, contact, other_contact in [(n1, p1, p2), (n2, p2, p1)]:
+            diff = other_contact - contact
+            normal_proj = normal.dot(diff) / np.linalg.norm(normal)
+
+            if normal_proj < 0:
+                return False  # wrong side
+            alpha = np.arccos(normal_proj / np.linalg.norm(diff))
+            if alpha > np.arctan(friction_coef):
+                return False  # outside of friction cone
+        return True
+
     def __str__(self):
         return f'{self.approach_axis}, {self.binormal_axis}, {self.curvature_axis}, {self.bottom_center}'

@@ -1,13 +1,14 @@
 # Grasp candidate generation configuration
 grasp_candidate_generation:
   neighbor_radius: 0.001
-  normals_radius: 0.001
+  normals_radius: 0.01
   num_samples: 50
   num_rotation: 10
   range_rotation: 90
   num_dy: 10
   approach_step: 0.005
   friction_cone_angle: 20
+  min_viable: 3
 
 hand_geometry:
   finger_width: 0.005

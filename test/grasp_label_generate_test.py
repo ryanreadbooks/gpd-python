@@ -21,7 +21,9 @@ from gpd.core.visualization import StaticVisualizer, BaseVisualizer
 def do_main():
     # read the point cloud from ply file
     # cloud = o3d.io.read_point_cloud('plys/glue.ply')
-    cloud = o3d.io.read_point_cloud('plys/krylon.pcd')
+    cloud = o3d.io.read_point_cloud('plys/sugar_box.ply')
+    # cloud = o3d.io.read_point_cloud('plys/mug.xyz')
+    # cloud = o3d.io.read_point_cloud('plys/krylon.pcd')
     all_points = np.asarray(cloud.points) / 1.
     print(f'point shape = {all_points.shape}, max = {all_points.max()}, min = {all_points.min()}')
     cloud = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(all_points))
@@ -45,27 +47,34 @@ def do_main():
 
     grasps = hand_search.generate_grasps(all_points, frames)
     print(f'Len of result grasps = {len(grasps)}')
+
+    use_force_closure = False
     if len(grasps) == 0:
         print('No grasp candidates generated')
         return
     else:
         # check the generated grasp is antipodal or not
-        label_generator = AntipodalGraspLabeling(0.003, 6, config.friction_coeff)
+        label_generator = AntipodalGraspLabeling(0.003, config.min_viable, config.friction_coeff)
 
         points = np.asarray(cloud.points)
         normals = np.asarray(cloud.normals)
-        # cloud.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.001, max_nn=30))
         n = 0
         for grasp in grasps:
-            points_t = (grasp.rotation.T @ (points - grasp.bottom_center).T).T
-            normals_t = (grasp.rotation @ normals.T).T
-            result = label_generator.label_grasp(grasp, points_t, normals_t)
-            if result == AntipodalGraspLabeling.FULL_GRASP:
-                n += 1
-                vis.add_hand(grasp, True)
-                vis.add_pointcloud(cloud.select_by_index(grasp.contained_pts_idx), np.array([0, 255, 0]))
+            if not use_force_closure:
+                points_t = (grasp.rotation.T @ (points - grasp.bottom_center).T).T
+                normals_t = (grasp.rotation @ normals.T).T
+                result = label_generator.label_grasp(grasp, points_t, normals_t)
+                if result == AntipodalGraspLabeling.FULL_GRASP:
+                    n += 1
+                    vis.add_hand(grasp, True)
+                    vis.add_pointcloud(cloud.select_by_index(grasp.contained_pts_idx), np.array([0, 255, 0]))
+            else:
+                result = label_generator.label_grasp_force_closure(grasp, points, normals)
+                if result:
+                    n += 1
+                    vis.add_hand(grasp, True)
 
-        print(f'full grasp = {n}')
+        print(f'positive grasp = {n}')
         if n > 0:
             vis.show()
 
