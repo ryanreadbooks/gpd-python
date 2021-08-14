@@ -19,8 +19,8 @@ def do_main():
     # np.random.seed(125)
     # read the point cloud from ply file
     # cloud = o3d.io.read_point_cloud('plys/glue.ply')
-    # cloud = o3d.io.read_point_cloud('plys/mug.xyz')
-    cloud = o3d.io.read_point_cloud('plys/sugar_box.ply')
+    # cloud = o3d.io.read_point_cloud('plys/sugar_box.ply')
+    cloud = o3d.io.read_point_cloud('plys/apple.ply')
     # cloud = o3d.io.read_point_cloud('plys/krylon.pcd')
     all_points = np.asarray(cloud.points) / 1.
     print(f'point shape = {all_points.shape}, max = {all_points.max()}, min = {all_points.min()}')

@@ -2,7 +2,7 @@
 grasp_candidate_generation:
   neighbor_radius: 0.001
   normals_radius: 0.01
-  num_samples: 50
+  num_samples: 35
   num_rotation: 10
   range_rotation: 90
   num_dy: 10

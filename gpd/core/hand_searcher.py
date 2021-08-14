@@ -105,7 +105,7 @@ class HandSearcher:
         # now we can make the grasps approach the object
         approach_max_dist = self.config.hand_geometry.hand_depth  # the objective distance to approach
         n_approaches = int(approach_max_dist // self.config.approach_step)
-        print('INFO: potential_grasps len = ', len(potential_grasps))
+        # print('INFO: potential_grasps len = ', len(potential_grasps))
         for p_grasp in potential_grasps:
             collided_during_approaching = False
             for i in range(n_approaches):
