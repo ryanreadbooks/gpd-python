@@ -109,6 +109,13 @@ class GraspImageGenerator:
         # we only take points that are inside opening region
         pts = points_t[grasp.contained_pts_idx]
         normal = normals_t[grasp.contained_pts_idx]
+        if self.cfg.need_both:
+            occupied_pic, normal_pic = self.generate_grasp_repr(pts, normals_t, self.ProjectionPlane_XY)
+            occupied_pic_xy, normal_pic_xy = self.generate_grasp_repr(pts, normal, self.ProjectionPlane_XY)
+            occupied_pic_yz, normal_pic_yz = self.generate_grasp_repr(pts, normal, self.ProjectionPlane_YZ)
+            occupied_pic_xz, normal_pic_xz = self.generate_grasp_repr(pts, normal, self.ProjectionPlane_XZ)
+            output2 = np.dstack([occupied_pic_xy, normal_pic_xy, occupied_pic_yz, normal_pic_yz, occupied_pic_xz, normal_pic_xz])
+            return normal_pic, output2
         if self.cfg.total_num_channels == 3:
             occupied_pic, normal_pic = self.generate_grasp_repr(pts, normals_t, self.ProjectionPlane_XY)
             output = normal_pic

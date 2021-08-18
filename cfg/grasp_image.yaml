@@ -3,3 +3,4 @@ image_size: 60
 total_num_channels: 3
 max_voxel_points: 50
 margin: 1
+need_both: True

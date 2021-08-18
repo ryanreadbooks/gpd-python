@@ -21,8 +21,8 @@ from gpd.core.visualization import StaticVisualizer, BaseVisualizer
 def do_main():
     # read the point cloud from ply file
     # cloud = o3d.io.read_point_cloud('plys/glue.ply')
-    cloud = o3d.io.read_point_cloud('plys/apple.ply')
-    # cloud = o3d.io.read_point_cloud('plys/sugar_box.ply')
+    # cloud = o3d.io.read_point_cloud('plys/apple.ply')
+    cloud = o3d.io.read_point_cloud('plys/sugar_box.ply')
     # cloud = o3d.io.read_point_cloud('plys/mug.xyz')
     # cloud = o3d.io.read_point_cloud('plys/krylon.pcd')
     all_points = np.asarray(cloud.points) / 1.
@@ -76,6 +76,7 @@ def do_main():
                         print(f'INFO: Found one positive grasp, now have {n_positive_grasps} positive grasps')
                         vis.add_hand(grasp, True)
                         # vis.add_pointcloud(cloud.select_by_index(grasp.contained_pts_idx), np.array([0, 255, 0]))
+                        # print(grasp)
                 else:
                     result = label_generator.label_grasp_force_closure(grasp, points, normals)
                     if result:

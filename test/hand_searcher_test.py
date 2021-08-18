@@ -19,8 +19,10 @@ def do_main():
     # np.random.seed(125)
     # read the point cloud from ply file
     # cloud = o3d.io.read_point_cloud('plys/glue.ply')
-    # cloud = o3d.io.read_point_cloud('plys/sugar_box.ply')
-    cloud = o3d.io.read_point_cloud('plys/apple.ply')
+    cloud = o3d.io.read_point_cloud('plys/sugar_box.ply')
+    # cloud = o3d.io.read_point_cloud('plys/merged_cloud.ply')
+    cloud = cloud.voxel_down_sample(voxel_size=0.005)
+    # cloud = o3d.io.read_point_cloud('plys/apple.ply')
     # cloud = o3d.io.read_point_cloud('plys/krylon.pcd')
     all_points = np.asarray(cloud.points) / 1.
     print(f'point shape = {all_points.shape}, max = {all_points.max()}, min = {all_points.min()}')
@@ -65,6 +67,7 @@ def do_main():
                            np.array([max(int(251 // (i + 1)), 0), min(20 * i, 255), min(255, i * 30 - 25)]))
 
     vis.show()
+    # vis.render_to_img()
 
 
 if __name__ == '__main__':

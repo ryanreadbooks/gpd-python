@@ -1,7 +1,7 @@
 # Grasp candidate generation configuration
 grasp_candidate_generation:
   neighbor_radius: 0.001
-  normals_radius: 0.01
+  normals_radius: 0.005
   num_samples: 35
   num_rotation: 10
   range_rotation: 90

@@ -3,6 +3,8 @@
 *.ply
 *.pcd
 *.xyz
+*.pth
+*.h5
 ### Python template
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -1,5 +1,6 @@
 import numpy as np
 import open3d as o3d
+import open3d.visualization.rendering as rendering
 
 from .base_visualizer import BaseVisualizer
 from ..entity import LocalFrame, Hand
@@ -33,3 +34,18 @@ class StaticVisualizer(BaseVisualizer):
         self.geometries.append(hand_lineset)
         if show_frame:
             self.add_local_frame(hand.frame, BaseVisualizer.LocalFrameColorScheme_Transform)
+
+    def render_to_img(self):
+        if len(self.geometries) != 0:
+            yellow = rendering.Material()
+            yellow.base_color = [1.0, 0.75, 0.0, 1.0]
+            yellow.shader = "defaultLit"
+            render = rendering.OffscreenRenderer(1920, 1080, headless=True)
+            for i, geometry in enumerate(self.geometries):
+                render.scene.add_geometry(f'g-{i}', geometry, yellow)
+            # render.setup_camera(60.0, [0,0,0], [0,10,0], [0,0,1])
+            render.scene.scene.enable_sun_light(False)
+            render.scene.show_axes(True)
+            img = render.render_to_image()
+            print('rendered image generated')
+            o3d.io.write_image('scene.png', img)

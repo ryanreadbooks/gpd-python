@@ -1,6 +1,11 @@
+import os
+import sys
+Base_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(Base_DIR)
+
 import numpy as np
 import open3d as o3d
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 from gpd.core import *
 from gpd.core.visualization import DynamicVisualizer, StaticVisualizer, BaseVisualizer
@@ -8,7 +13,8 @@ from gpd.core.visualization import DynamicVisualizer, StaticVisualizer, BaseVisu
 
 if __name__ == '__main__':
 
-    cloud = o3d.io.read_point_cloud('plys/krylon.pcd')
+    # cloud = o3d.io.read_point_cloud('plys/krylon.pcd')
+    cloud = o3d.io.read_point_cloud('plys/sugar_box.ply')
     all_points = np.asarray(cloud.points) / 1.
     print(f'point shape = {all_points.shape}, max = {all_points.max()}, min = {all_points.min()}')
     cloud = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(all_points))
@@ -43,18 +49,16 @@ if __name__ == '__main__':
         grasp: Hand = grasps[0]
         points = np.asarray(cloud.points)
         normals = np.asarray(cloud.normals)
-        points_t = (grasp.rotation.T @ (points - grasp.bottom_center).T).T
-        normals_t = (grasp.rotation @ normals.T).T
         res = grasp_image_generator.generate_grasp_image(grasps[0], points, normals)
         print(res.shape)
 
         vis.add_hand(grasp, True)
         # vis.add_pointcloud(cloud.select_by_index(grasp.contained_pts_idx, invert=True), )
-        vis.add_pointcloud(cloud.select_by_index(grasp.contained_pts_idx), np.array([0, 255, 0]))
-        vis.show()
+        # vis.add_pointcloud(cloud.select_by_index(grasp.contained_pts_idx), np.array([0, 255, 0]))
+        # vis.show()
         # # try to visualize it
-        # occupy_img = np.clip(occupy_pic * 255, 0, 255).astype(int)
-        # norm_img = np.clip(norm_pic * 255, 0, 255).astype(int)
+        # occupy_img = np.clip(res * 255, 0, 255).astype(int)
+        norm_img = np.clip(res * 255, 0, 255).astype(int)
         # occupy_img1 = np.clip(occupy_pic1 * 255, 0, 255).astype(int)
         # norm_img1 = np.clip(norm_pic1 * 255, 0, 255).astype(int)
         # occupy_img2 = np.clip(occupy_pic2 * 255, 0, 255).astype(int)

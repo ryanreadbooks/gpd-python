@@ -11,3 +11,4 @@ class GraspImageConfig:
             self.total_num_channels = cfg['total_num_channels']
             self.max_voxel_points = cfg['max_voxel_points']
             self.margin = cfg['margin']
+            self.need_both = cfg['need_both']

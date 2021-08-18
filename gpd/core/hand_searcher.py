@@ -49,58 +49,64 @@ class HandSearcher:
 
         # every frame should do the homogeneous transformation to be a new frame and then check for collision
         for frame in frames:
-            # make rotation step
-            for angle in rotations_steps:
-                inv_xy_rot_mat = Rotation.from_rotvec(np.pi * frame.curvature_axis).as_matrix()
-                rot_mat = Rotation.from_rotvec(angle * frame.curvature_axis).as_matrix()
-                dy_potential_grasps: List[Hand] = list()
-                # dy step is finger width
-                # perform rotation
-                frame_rotated: LocalFrame = frame.rotate(inv_xy_rot_mat).rotate(rot_mat)
+            for i in range(2):
+                if i == 0:
+                    rotation_axis = frame.curvature_axis
+                else:
+                    rotation_axis = frame.normal_axis
+                # make rotation step
+                for angle in rotations_steps:
+                    inv_xy_rot_mat = Rotation.from_rotvec(np.pi * frame.curvature_axis).as_matrix()
+                    # rot_mat = Rotation.from_rotvec(angle * frame.curvature_axis).as_matrix()
+                    rot_mat = Rotation.from_rotvec(angle * rotation_axis).as_matrix()
+                    dy_potential_grasps: List[Hand] = list()
+                    # dy step is finger width
+                    # perform rotation
+                    frame_rotated: LocalFrame = frame.rotate(inv_xy_rot_mat).rotate(rot_mat)
 
-                for dy in dy_steps:
-                    # move the frame sample by the distance of 'dy' along binormal axis(y direction)
-                    sample_translated = frame.sample + frame_rotated.binormal_axis * dy
-                    # go back a 'bite' after rotation and translation
-                    bottom_center: np.ndarray = -self.config.hand_geometry.init_bite * frame_rotated.normal_axis + sample_translated
+                    for dy in dy_steps:
+                        # move the frame sample by the distance of 'dy' along binormal axis(y direction)
+                        sample_translated = frame.sample + frame_rotated.binormal_axis * dy
+                        # go back a 'bite' after rotation and translation
+                        bottom_center: np.ndarray = -self.config.hand_geometry.init_bite * frame_rotated.normal_axis + sample_translated
 
-                    transformed_frame = copy.deepcopy(frame_rotated)
-                    transformed_frame.sample = bottom_center
+                        transformed_frame = copy.deepcopy(frame_rotated)
+                        transformed_frame.sample = bottom_center
 
-                    # create a grasp candidate based on the transformed frame
-                    grasp: Hand = Hand(frame.sample, transformed_frame, bottom_center, self.config.hand_geometry)
+                        # create a grasp candidate based on the transformed frame
+                        grasp: Hand = Hand(frame.sample, transformed_frame, bottom_center, self.config.hand_geometry)
 
-                    # now we can check collision
-                    has_points_in_open_region, _ = grasp.check_square_collision(points, Hand.OpenRegion)
-                    collided_with_bottom = True
-                    collided_with_right = True
-                    collided_with_left = True
-                    if has_points_in_open_region:
-                        collided_with_bottom, _ = grasp.check_square_collision(points, Hand.HandBottom)
-                        # if points in region between fingers and do not collided with the bottom, we do further checking
-                        if not collided_with_bottom:
-                            collided_with_left, _ = grasp.check_square_collision(points, Hand.LeftFinger)
-                            if not collided_with_left:
-                                collided_with_right, _ = grasp.check_square_collision(points, Hand.RightFInger)
-                                if not collided_with_right:
-                                    # add the grasp to dy_potential_grasps pool which contains grasps that satisfy condition along y axis(binormal axis)
-                                    dy_potential_grasps.append(grasp)
-                    if not has_points_in_open_region and collided_with_bottom and collided_with_right and collided_with_left:
-                        continue
+                        # now we can check collision
+                        has_points_in_open_region, _ = grasp.check_square_collision(points, Hand.OpenRegion)
+                        collided_with_bottom = True
+                        collided_with_right = True
+                        collided_with_left = True
+                        if has_points_in_open_region:
+                            collided_with_bottom, _ = grasp.check_square_collision(points, Hand.HandBottom)
+                            # if points in region between fingers and do not collided with the bottom, we do further checking
+                            if not collided_with_bottom:
+                                collided_with_left, _ = grasp.check_square_collision(points, Hand.LeftFinger)
+                                if not collided_with_left:
+                                    collided_with_right, _ = grasp.check_square_collision(points, Hand.RightFInger)
+                                    if not collided_with_right:
+                                        # add the grasp to dy_potential_grasps pool which contains grasps that satisfy condition along y axis(binormal axis)
+                                        dy_potential_grasps.append(grasp)
+                        if not has_points_in_open_region and collided_with_bottom and collided_with_right and collided_with_left:
+                            continue
 
-                if len(dy_potential_grasps) != 0:
-                    # we only take the middle grasps from dy direction
-                    middle_grasp: Hand = dy_potential_grasps[len(dy_potential_grasps) // 2]
-                    # then check if the hand is collided with the table by checking if this grasp is a grasp from down to top direction (greater than 30 degrees)
-                    # the finger tip position
-                    fingertip_pos = middle_grasp.bottom_center + middle_grasp.approach_axis * middle_grasp.hand_depth
-                    # fingertip_pos[2] => the z coordinate of fingertip
-                    # middle_grasp.bottom_center[2] => the z coordinate of bottom center
-                    # -middle_grasp.hand_depth * 0.5 means we grasp objects with the angle larger than 30 degrees
-                    # if grasp angle from down to top is greater than 30 degrees, than we accept this grasp as a potential?
-                    # fixme this step check if hand collided with table, we need another method for doing it!!! this doesn't work
-                    if fingertip_pos[2] < middle_grasp.bottom_center[2] - middle_grasp.hand_depth * np.sin(30. / 180. * np.pi):
-                        potential_grasps.append(middle_grasp)
+                    if len(dy_potential_grasps) != 0:
+                        # we only take the middle grasps from dy direction
+                        middle_grasp: Hand = dy_potential_grasps[len(dy_potential_grasps) // 2]
+                        # then check if the hand is collided with the table by checking if this grasp is a grasp from down to top direction (greater than 30 degrees)
+                        # the finger tip position
+                        fingertip_pos = middle_grasp.bottom_center + middle_grasp.approach_axis * middle_grasp.hand_depth
+                        # fingertip_pos[2] => the z coordinate of fingertip
+                        # middle_grasp.bottom_center[2] => the z coordinate of bottom center
+                        # -middle_grasp.hand_depth * 0.5 means we grasp objects with the angle larger than 30 degrees
+                        # if grasp angle from down to top is greater than 30 degrees, than we accept this grasp as a potential?
+                        # fixme this step check if hand collided with table, we need another method for doing it!!! this doesn't work
+                        if fingertip_pos[2] < middle_grasp.bottom_center[2] - middle_grasp.hand_depth * np.sin(30. / 180. * np.pi):
+                            potential_grasps.append(middle_grasp)
 
         # now we can make the grasps approach the object
         approach_max_dist = self.config.hand_geometry.hand_depth  # the objective distance to approach

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 import numpy as np
 import open3d as o3d
 
@@ -66,7 +66,7 @@ class Hand:
         # store the indices of points of the object when the grasp surrounding an object
         self.contained_pts_idx = None
 
-    def check_square_collision(self, points: np.ndarray, way) -> (bool, np.ndarray):
+    def check_square_collision(self, points: np.ndarray, way) -> Tuple[bool, np.ndarray]:
         """
         check whether there are collisions between given 'points' and the specified hand part
         :param points: the graspable object points, shape = (n, 3) or (3, n)
