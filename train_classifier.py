@@ -8,7 +8,7 @@ from gpd.core import *
 
 def train_classifier():
     in_channel = 12
-    n_epoch = 5000
+    n_epoch = 2000
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     train_dataset = GraspImageDataset(root='test/images', train=True, channel=in_channel)
     test_dataset = GraspImageDataset(root='test/images', train=False, channel=in_channel)
@@ -18,8 +18,8 @@ def train_classifier():
     classifier = GPDClassifier(input_chann=in_channel, dropout=False)
     classifier.to(device)
     
-    optimizer = optim.Adam(classifier.parameters(), lr=0.001, weight_decay=0.0001)
-    scheduler = optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=500, gamma=0.8)
+    optimizer = optim.Adam(classifier.parameters(), lr=0.0001, weight_decay=0.0001)
+    scheduler = optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=100, gamma=0.9)
     print('starts training...')
     for epoch in range(n_epoch):
         classifier.train(True)
@@ -47,7 +47,7 @@ def train_classifier():
 
         scheduler.step()
     print('saving the model...')
-    torch.save(classifier.state_dict(), 'model/model-normal-10000.pth')
+    torch.save(classifier.state_dict(), 'model/model-chann12.pth')
 
 
 
