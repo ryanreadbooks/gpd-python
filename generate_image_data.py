@@ -35,7 +35,7 @@ def generate_model_image_woker(paths: Tuple[str, str]):
     # search for positive and negative hand
     config = HandSearcherConfig('cfg/grasp_generation.yaml')
     n_positive_grasps = 0
-    n_positive_grasps_needed = 20
+    n_positive_grasps_needed = 30
 
     grasp_image_generator = GraspImageGenerator(GraspImageConfig('cfg/grasp_image.yaml'), 
                                     config.hand_geometry.hand_outer_diameter)
@@ -133,6 +133,7 @@ def generate_model_image_woker(paths: Tuple[str, str]):
         all_view_dataset.attrs['label'] = 0
         all_view_dataset.attrs['channel'] = 12
         num += 1
+    num = 0
     # positive test data
     for i, negative_grasp in enumerate(positive_grasps_test):
         norm_pic, all_view_pic = grasp_image_generator.generate_grasp_image(negative_grasp, points, normals)

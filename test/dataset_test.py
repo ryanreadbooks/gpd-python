@@ -10,7 +10,7 @@ from gpd import GraspImageDataset
 
 
 if __name__ == '__main__':
-    dataset = GraspImageDataset(root='images', train=True)
+    dataset = GraspImageDataset(root='images', train=False)
     dataloader = torch_data.DataLoader(dataset, batch_size=4, shuffle=True, num_workers=12)
     for i, data in enumerate(dataloader):
         repr, label = data
